@@ -52,6 +52,9 @@ export class FieldFactory {
         this.includes('commit')
           ? createAttachment('commit', await this.commit())
           : undefined,
+        this.includes('pullRequst')
+          ? createAttachment('pullRequest', await this.pullRequest())
+          : undefined,
         this.includes('author')
           ? createAttachment('author', await this.author())
           : undefined,
@@ -161,6 +164,22 @@ export class FieldFactory {
       this.gitHubBaseUrl
     }/${owner}/${repo}/commit/${sha}|${sha.slice(0, 8)}>`;
     process.env.AS_COMMIT = value;
+    return value;
+  }
+
+  private async pullRequest(): Promise<string> {
+    const { sha, ref, payload, eventName } = context;
+    const { owner, repo } = context.repo;
+    const branch =
+      eventName === 'pull_request'
+        ? payload.pull_request?.head.ref
+        : ref.replace('refs/heads/', '');
+
+    const value =
+      eventName === 'pull_request'
+        ? `<${payload.pull_request?.html_url} | ${payload.pull_request?.title}>`
+        : `<${this.gitHubBaseUrl}/${owner}/${repo}/commit/${sha} | ${branch}>`;
+    process.env.AS_PULL_REQUEST = value;
     return value;
   }
 
