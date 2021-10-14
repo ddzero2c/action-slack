@@ -79,13 +79,17 @@ export class FieldFactory {
   }
 
   private async message(): Promise<string> {
+    const { payload, eventName } = context;
     const resp = await this.getCommit(this.octokit);
 
-    const value = `<${resp.data.html_url}|${resp.data.commit.message
-      .split('\n')[0]
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')}>`;
+    const value =
+      eventName === 'pull_request'
+        ? `<${payload.pull_request?.html_url} | ${payload.pull_request?.title}>`
+        : `<${resp.data.html_url}|${resp.data.commit.message
+            .split('\n')[0]
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')}>`;
     process.env.AS_MESSAGE = value;
     return value;
   }
